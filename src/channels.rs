@@ -61,6 +61,7 @@ pub struct SimulationAdapter;
 /// - `…00.02` → decline
 /// - `…00.04` → timeout (treated as decline)
 /// - `…00.06` → SCA required (challenge — the charge holds pending)
+///
 /// All other amounts succeed.
 const TEST_DECLINE_SUFFIX: &str = "00.02";
 const TEST_TIMEOUT_SUFFIX: &str = "00.04";
@@ -83,7 +84,6 @@ pub enum SimOutcome {
 /// Classify a test-mode amount into its deterministic outcome.
 ///
 /// # Examples
-///
 /// ```
 /// use bill8_payments_server::channels::{sim_outcome, SimOutcome};
 ///
