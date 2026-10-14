@@ -1,0 +1,20 @@
+{
+  "vertical": "bill8",
+  "services": [
+    {
+      "service_type": "bill8:payments",
+      "event_triggers": [
+        {
+          "event_type": "sentin8:sys:service:updated",
+          "consumer_group": "bill8:payments:envinit",
+          "action": "seed_default_customer_state"
+        },
+        {
+          "event_type": "bill8:risk:review:resolved",
+          "consumer_group": "bill8:payments:review",
+          "action": "resolve_review"
+        }
+      ]
+    }
+  ]
+}
