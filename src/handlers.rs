@@ -11,12 +11,12 @@
 //! movement) → charge record + outbox in ONE transaction → COMMIT.
 //! A blocked screening or channel failure writes NOTHING.
 
+pub mod channels_admin;
 pub mod charges;
 pub mod customers;
 pub mod disputes;
 pub mod intents;
 pub mod refunds;
-pub mod channels_admin;
 
 use std::sync::Arc;
 
@@ -61,7 +61,8 @@ pub async fn emit_event(
     payload: serde_json::Value,
 ) {
     if let Err(e) =
-        sentin8::bus::outbox::insert_outbox_row_pool(pool, env_id, "payments", event_type, &payload).await
+        sentin8::bus::outbox::insert_outbox_row_pool(pool, env_id, "payments", event_type, &payload)
+            .await
     {
         tracing::warn!(error = %e, event_type, "bill8:payments: failed to emit outbox event");
     }

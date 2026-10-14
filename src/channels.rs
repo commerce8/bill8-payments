@@ -166,24 +166,19 @@ pub async fn route(
     a: &AuthContext,
     req: &CreateChargeRequest,
 ) -> Result<Option<Uuid>, String> {
-    let mut conn = state
-        .pool
-        .acquire()
-        .await
-        .map_err(|e| e.to_string())?;
+    let mut conn = state.pool.acquire().await.map_err(|e| e.to_string())?;
     crate::handlers::set_tenant_context(&mut conn, a.env_id())
         .await
         .map_err(|e| e.to_string())?;
 
     // Default channel when no rule matches.
-    let default = sqlx::query(
-        "SELECT default_channel FROM payments.channel_configs WHERE env_id = $1",
-    )
-    .bind(a.env_id())
-    .fetch_optional(&mut *conn)
-    .await
-    .map_err(|e| e.to_string())?
-    .map(|r| r.get::<Uuid, _>("default_channel"));
+    let default =
+        sqlx::query("SELECT default_channel FROM payments.channel_configs WHERE env_id = $1")
+            .bind(a.env_id())
+            .fetch_optional(&mut *conn)
+            .await
+            .map_err(|e| e.to_string())?
+            .map(|r| r.get::<Uuid, _>("default_channel"));
 
     if let Some(id) = default {
         return Ok(Some(id));
@@ -241,7 +236,10 @@ pub async fn post_refund_to_ledger(
     let debit = resolve_platform_balance(state, client, "connected_reserved").await?;
 
     let resp = client
-        .post(format!("{}/v1/balance-transactions", state.config.bill8_ledger_url))
+        .post(format!(
+            "{}/v1/balance-transactions",
+            state.config.bill8_ledger_url
+        ))
         .json(&bill8::ledger::contracts::PostTransactionRequest {
             debit_balance_id: debit,
             credit_balance_id: credit,
@@ -285,7 +283,9 @@ pub async fn post_split_to_ledger(
         .and_then(|s| s.parse().ok())
         .unwrap_or(Decimal::ZERO);
     if fee < Decimal::ZERO || fee >= amount {
-        return Err(format!("application_fee {fee} out of range for amount {amount}"));
+        return Err(format!(
+            "application_fee {fee} out of range for amount {amount}"
+        ));
     }
     let connected_amount = amount - fee;
 
@@ -344,7 +344,10 @@ async fn post_ledger_leg(
     idempotency_key: Option<String>,
 ) -> Result<Uuid, String> {
     let resp = client
-        .post(format!("{}/v1/balance-transactions", state.config.bill8_ledger_url))
+        .post(format!(
+            "{}/v1/balance-transactions",
+            state.config.bill8_ledger_url
+        ))
         .json(&bill8::ledger::contracts::PostTransactionRequest {
             debit_balance_id: debit,
             credit_balance_id: credit,
@@ -409,7 +412,10 @@ pub async fn post_charge_to_ledger(
     let credit = resolve_platform_balance(state, client, "connected_reserved").await?;
 
     let resp = client
-        .post(format!("{}/v1/balance-transactions", state.config.bill8_ledger_url))
+        .post(format!(
+            "{}/v1/balance-transactions",
+            state.config.bill8_ledger_url
+        ))
         .json(&bill8::ledger::contracts::PostTransactionRequest {
             debit_balance_id: debit,
             credit_balance_id: credit,

@@ -41,20 +41,29 @@ pub async fn create_dispute(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:disputes:write"),
-    ).await?;
+    )
+    .await?;
 
     let charge_id: Uuid = body["charge_id"]
         .as_str()
         .and_then(|s| Uuid::parse_str(s).ok())
         .ok_or_else(|| (StatusCode::BAD_REQUEST, "charge_id required".into()))?;
-    let reason = body["reason"].as_str().unwrap_or("unrecognized").to_string();
+    let reason = body["reason"]
+        .as_str()
+        .unwrap_or("unrecognized")
+        .to_string();
     let amount_str = body["amount"].as_str().unwrap_or("0");
-    let amount: Decimal = amount_str
-        .parse()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "amount must be a decimal string".into()))?;
+    let amount: Decimal = amount_str.parse().map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            "amount must be a decimal string".into(),
+        )
+    })?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let id = Uuid::new_v4();
     sqlx::query(
@@ -90,7 +99,9 @@ pub async fn create_dispute(
     .map_err(err_db)?;
 
     conn.commit().await.map_err(err_db)?;
-    Ok(Json(serde_json::json!({ "dispute_id": id, "status": "needs_response" })))
+    Ok(Json(
+        serde_json::json!({ "dispute_id": id, "status": "needs_response" }),
+    ))
 }
 
 /// `GET /v1/disputes` — list disputes.
@@ -114,10 +125,13 @@ pub async fn list_disputes(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:disputes:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         "SELECT id, charge_id, amount, reason, status, created_at FROM payments.disputes ORDER BY created_at DESC LIMIT 200",
@@ -165,10 +179,13 @@ pub async fn submit_evidence(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:disputes:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     sqlx::query(
         "UPDATE payments.disputes SET evidence_refs = $1, status = 'under_review', resource_version = resource_version + 1 WHERE id = $2",
@@ -220,7 +237,8 @@ pub async fn resolve_dispute(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:disputes:write"),
-    ).await?;
+    )
+    .await?;
 
     if req.outcome != "won" && req.outcome != "lost" {
         return Err((
@@ -230,7 +248,9 @@ pub async fn resolve_dispute(
     }
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Guarded terminal transition: under_review → won|lost. The charge
     // join carries the currency the clawback posts in.
@@ -245,13 +265,11 @@ pub async fn resolve_dispute(
     .ok_or_else(|| (StatusCode::CONFLICT, "dispute already closed".into()))?;
     let charge_id: Uuid = result.get("charge_id");
     let amount: Decimal = result.get("amount");
-    let charge_row = sqlx::query(
-        "SELECT currency FROM payments.charges WHERE id = $1",
-    )
-    .bind(charge_id)
-    .fetch_one(&mut *conn)
-    .await
-    .map_err(err_db)?;
+    let charge_row = sqlx::query("SELECT currency FROM payments.charges WHERE id = $1")
+        .bind(charge_id)
+        .fetch_one(&mut *conn)
+        .await
+        .map_err(err_db)?;
     let currency: String = charge_row.get("currency");
 
     // A lost dispute claws the funds back: one ledger reversal for the
@@ -265,11 +283,18 @@ pub async fn resolve_dispute(
             idempotency_key: Some(format!("dispute-{id}")),
         };
         let tx_ref = crate::channels::post_refund_to_ledger(
-            &state, a.env_id(), &refund_req, amount, &currency,
+            &state,
+            a.env_id(),
+            &refund_req,
+            amount,
+            &currency,
         )
         .await
         .map_err(|e| {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("clawback posting failed: {e}"))
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("clawback posting failed: {e}"),
+            )
         })?;
         let _ = tx_ref;
         sqlx::query(
@@ -292,5 +317,7 @@ pub async fn resolve_dispute(
     .map_err(err_db)?;
 
     conn.commit().await.map_err(err_db)?;
-    Ok(Json(serde_json::json!({ "dispute_id": id, "status": req.outcome })))
+    Ok(Json(
+        serde_json::json!({ "dispute_id": id, "status": req.outcome }),
+    ))
 }

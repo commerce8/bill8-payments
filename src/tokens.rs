@@ -67,20 +67,21 @@ pub async fn create_token(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:tokens:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // The referenced method must exist in this env.
-    let exists = sqlx::query(
-        "SELECT id FROM payments.payment_methods WHERE id = $1",
-    )
-    .bind(req.payment_method_id)
-    .fetch_optional(&mut *conn)
-    .await
-    .map_err(err_db)?
-    .is_some();
+    let exists = sqlx::query("SELECT id FROM payments.payment_methods WHERE id = $1")
+        .bind(req.payment_method_id)
+        .fetch_optional(&mut *conn)
+        .await
+        .map_err(err_db)?
+        .is_some();
     if !exists {
         return Err((StatusCode::NOT_FOUND, "payment method not found".into()));
     }
@@ -121,7 +122,11 @@ pub async fn create_token(
         serde_json::json!({ "token_id": id }),
     )
     .await;
-    Ok(Json(TokenResponse { id, token_value, expires_at }))
+    Ok(Json(TokenResponse {
+        id,
+        token_value,
+        expires_at,
+    }))
 }
 
 /// `POST /v1/tokens/{token_value}/consume` — consume a token
@@ -149,10 +154,13 @@ pub async fn consume_token(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:tokens:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Guarded single-use: the UPDATE only matches an unused, unexpired
     // token — a second consume finds no row (409), and an expired token

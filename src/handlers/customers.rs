@@ -38,10 +38,13 @@ pub async fn create_customer(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:customers:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let id = Uuid::new_v4();
     let row = sqlx::query(
@@ -102,10 +105,13 @@ pub async fn list_customers(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:customers:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         "SELECT id, env_id, display_name, email, status, sentin8_auth_user_id, created_at FROM payments.customers ORDER BY created_at DESC LIMIT 200",

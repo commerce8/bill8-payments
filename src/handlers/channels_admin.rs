@@ -39,10 +39,13 @@ pub async fn list_channels(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:channels:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         "SELECT id, env_id, name, label, methods, regions, recurring, mode, enabled, created_at FROM payments.channels ORDER BY created_at",
@@ -92,10 +95,13 @@ pub async fn create_routing_rule(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:routing:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let id = Uuid::new_v4();
     sqlx::query(
@@ -149,19 +155,21 @@ pub async fn method_catalog(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:channels:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // The catalog is derived from the registered channels' capability
     // matrices — a method appears when some enabled channel supports it.
-    let rows = sqlx::query(
-        "SELECT methods, regions, recurring FROM payments.channels WHERE enabled",
-    )
-    .fetch_all(&mut *conn)
-    .await
-    .map_err(err_db)?;
+    let rows =
+        sqlx::query("SELECT methods, regions, recurring FROM payments.channels WHERE enabled")
+            .fetch_all(&mut *conn)
+            .await
+            .map_err(err_db)?;
 
     let mut catalog: Vec<MethodCatalogEntry> = Vec::new();
     for row in &rows {
@@ -217,10 +225,13 @@ pub async fn sca_handback(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:intents:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Guarded single-use handback: the UPDATE only matches an unused,
     // unexpired token bound to this intent.
@@ -235,7 +246,12 @@ pub async fn sca_handback(
     .fetch_optional(&mut *conn)
     .await
     .map_err(err_db)?
-    .ok_or_else(|| (StatusCode::CONFLICT, "handback token invalid, used, or expired".into()))?;
+    .ok_or_else(|| {
+        (
+            StatusCode::CONFLICT,
+            "handback token invalid, used, or expired".into(),
+        )
+    })?;
     let _challenge_id: Uuid = challenge.get("id");
 
     // Complete the held charge: the channel's verified outcome is the
@@ -284,13 +300,16 @@ pub async fn sca_handback(
         .parse()
         .map_err(|_| (StatusCode::BAD_REQUEST, "stored amount unreadable".into()))?;
     let tx_ref = if on_behalf_of.is_some() || application_fee.is_some() {
-        crate::channels::post_split_to_ledger(&state, a.env_id(), &charge_req, amount_dec)
-            .await
+        crate::channels::post_split_to_ledger(&state, a.env_id(), &charge_req, amount_dec).await
     } else {
-        crate::channels::post_charge_to_ledger(&state, a.env_id(), &charge_req, amount_dec)
-            .await
+        crate::channels::post_charge_to_ledger(&state, a.env_id(), &charge_req, amount_dec).await
     }
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("ledger posting failed: {e}")))?;
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("ledger posting failed: {e}"),
+        )
+    })?;
 
     // Guarded transition: pending → succeeded (the FOR UPDATE lock
     // plus the status guard make this exactly-once).
@@ -314,7 +333,9 @@ pub async fn sca_handback(
     .map_err(err_db)?;
 
     conn.commit().await.map_err(err_db)?;
-    Ok(Json(serde_json::json!({ "charge_id": charge_id, "status": "succeeded" })))
+    Ok(Json(
+        serde_json::json!({ "charge_id": charge_id, "status": "succeeded" }),
+    ))
 }
 
 /// Request body for the SCA handback.
@@ -347,10 +368,13 @@ pub async fn set_channel_config(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:routing:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     sqlx::query(
         r#"INSERT INTO payments.channel_configs (env_id, default_channel)
@@ -398,19 +422,22 @@ pub async fn get_channel_config(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:channels:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
-    let row = sqlx::query(
-        "SELECT default_channel FROM payments.channel_configs WHERE env_id = $1",
-    )
-    .bind(a.env_id())
-    .fetch_optional(&mut *conn)
-    .await
-    .map_err(err_db)?
-    .ok_or_else(|| (StatusCode::NOT_FOUND, "no channel configured".into()))?;
+    let row = sqlx::query("SELECT default_channel FROM payments.channel_configs WHERE env_id = $1")
+        .bind(a.env_id())
+        .fetch_optional(&mut *conn)
+        .await
+        .map_err(err_db)?
+        .ok_or_else(|| (StatusCode::NOT_FOUND, "no channel configured".into()))?;
 
-    Ok(Json(serde_json::json!({ "default_channel": row.get::<Uuid, _>("default_channel") })))
+    Ok(Json(
+        serde_json::json!({ "default_channel": row.get::<Uuid, _>("default_channel") }),
+    ))
 }

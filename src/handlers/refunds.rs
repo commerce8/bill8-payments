@@ -42,10 +42,13 @@ pub async fn create_refund(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:refunds:write"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Idempotency: a retried refund returns the original.
     if let Some(key) = req.idempotency_key.as_deref() {
@@ -87,9 +90,12 @@ pub async fn create_refund(
     let remaining = charge_amount - already_refunded;
 
     let amount: Decimal = match req.amount.as_deref() {
-        Some(s) => s
-            .parse()
-            .map_err(|_| (StatusCode::BAD_REQUEST, "amount must be a decimal string".into()))?,
+        Some(s) => s.parse().map_err(|_| {
+            (
+                StatusCode::BAD_REQUEST,
+                "amount must be a decimal string".into(),
+            )
+        })?,
         // Default: refund the remaining amount.
         None => remaining,
     };
@@ -111,9 +117,15 @@ pub async fn create_refund(
         .await
         .map(|r| r.get("currency"))
         .map_err(err_db)?;
-    let tx_ref = crate::channels::post_refund_to_ledger(&state, a.env_id(), &req, amount, &currency)
-        .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("ledger reversal failed: {e}")))?;
+    let tx_ref =
+        crate::channels::post_refund_to_ledger(&state, a.env_id(), &req, amount, &currency)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("ledger reversal failed: {e}"),
+                )
+            })?;
 
     let refund_id = Uuid::new_v4();
     let row = sqlx::query(
@@ -134,7 +146,11 @@ pub async fn create_refund(
     // Guarded charge update: accumulate amount_refunded; transition to
     // the terminal refunded state when fully refunded.
     let new_refunded = already_refunded + amount;
-    let new_status = if new_refunded == charge_amount { "refunded" } else { "partially_refunded" };
+    let new_status = if new_refunded == charge_amount {
+        "refunded"
+    } else {
+        "partially_refunded"
+    };
     sqlx::query(
         "UPDATE payments.charges SET amount_refunded = $1, status = $2, resource_version = resource_version + 1, updated_at = now() WHERE id = $3",
     )
@@ -180,10 +196,13 @@ pub async fn list_refunds(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:refunds:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         "SELECT id, charge_id, amount, status, balance_transaction_id, created_at FROM payments.refunds ORDER BY created_at DESC LIMIT 200",
@@ -201,7 +220,9 @@ async fn get_refund_row(
     id: Uuid,
 ) -> Result<Json<Refund>, (StatusCode, String)> {
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, env_id).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, env_id)
+        .await
+        .map_err(err_db)?;
     let row = sqlx::query(
         "SELECT id, charge_id, amount, status, balance_transaction_id, created_at FROM payments.refunds WHERE id = $1",
     )

@@ -25,5 +25,5 @@ pub mod openapi;
 pub mod policy;
 pub mod registration;
 pub mod server;
-pub mod types;
 pub mod tokens;
+pub mod types;

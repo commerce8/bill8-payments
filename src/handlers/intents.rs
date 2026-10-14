@@ -51,14 +51,19 @@ pub async fn create_payment_intent(
     .await?;
 
     let amount: Decimal = req.amount.parse().map_err(|_| {
-        (StatusCode::BAD_REQUEST, "amount must be a decimal string".into())
+        (
+            StatusCode::BAD_REQUEST,
+            "amount must be a decimal string".into(),
+        )
     })?;
     if amount <= Decimal::ZERO {
         return Err((StatusCode::BAD_REQUEST, "amount must be positive".into()));
     }
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Idempotency: a retried create returns the original intent.
     if let Some(key) = req.idempotency_key.as_deref() {
@@ -132,7 +137,9 @@ pub async fn list_payment_intents(
     .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         r#"SELECT id, env_id, customer_id, payment_method_id, amount, currency,
@@ -175,7 +182,9 @@ pub async fn confirm_payment_intent(
     .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Guarded transition: only a requires_confirmation intent confirms.
     let result = sqlx::query(
@@ -234,7 +243,9 @@ pub async fn create_setup_intent(
     .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let id = Uuid::new_v4();
     sqlx::query(
@@ -299,7 +310,9 @@ pub async fn list_setup_intents(
     .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         r#"SELECT id, env_id, customer_id, payment_method_id, status, created_at
@@ -340,7 +353,9 @@ pub async fn confirm_setup_intent(
     .await?;
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let result = sqlx::query(
         "UPDATE payments.setup_intents
@@ -376,7 +391,9 @@ async fn get_intent_row(
     id: Uuid,
 ) -> Result<PaymentIntent, (StatusCode, String)> {
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, env_id).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, env_id)
+        .await
+        .map_err(err_db)?;
     let row = sqlx::query(
         r#"SELECT id, env_id, customer_id, payment_method_id, amount, currency,
                   status, channel_id, created_at

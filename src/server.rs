@@ -19,10 +19,7 @@ use crate::handlers;
 /// # Errors
 /// Returns the certificate-ensure or transport-build failure (the
 /// caller logs and degrades).
-async fn build_workload_http(
-    auth_issuer: &str,
-    workload: &str,
-) -> anyhow::Result<reqwest::Client> {
+async fn build_workload_http(auth_issuer: &str, workload: &str) -> anyhow::Result<reqwest::Client> {
     let cert = sentin8::auth::m2m::ensure_workload_certificate(
         auth_issuer,
         workload,
@@ -75,13 +72,17 @@ pub async fn build_state(core: sentin8::shell::ServiceCore) -> anyhow::Result<ha
     // path).
     match build_workload_http(&config.sentin8_auth_issuer, "bill8-payments-ledger").await {
         Ok(http) => config.ledger_http = Some(http),
-        Err(e) => tracing::warn!(error = %e, "payments-ledger transport unavailable — charges cannot move money"),
+        Err(e) => {
+            tracing::warn!(error = %e, "payments-ledger transport unavailable — charges cannot move money")
+        }
     }
 
     // Cross-service risk workload transport (inline screening).
     match build_workload_http(&config.sentin8_auth_issuer, "bill8-payments-risk").await {
         Ok(http) => config.risk_http = Some(http),
-        Err(e) => tracing::warn!(error = %e, "payments-risk transport unavailable — screening fails closed"),
+        Err(e) => {
+            tracing::warn!(error = %e, "payments-risk transport unavailable — screening fails closed")
+        }
     }
 
     let policy_engine = core.admin.policy.clone();
@@ -119,24 +120,44 @@ pub fn routes(router: axum::Router<handlers::AppState>) -> axum::Router<handlers
             "/v1/disputes",
             get(handlers::disputes::list_disputes).post(handlers::disputes::create_dispute),
         )
-        .route("/v1/disputes/{id}/evidence", axum::routing::post(handlers::disputes::submit_evidence))
-        .route("/v1/disputes/{id}/resolve", axum::routing::post(handlers::disputes::resolve_dispute))
+        .route(
+            "/v1/disputes/{id}/evidence",
+            axum::routing::post(handlers::disputes::submit_evidence),
+        )
+        .route(
+            "/v1/disputes/{id}/resolve",
+            axum::routing::post(handlers::disputes::resolve_dispute),
+        )
         .route("/v1/channels", get(handlers::channels_admin::list_channels))
         .route(
             "/v1/channel-config",
-            get(handlers::channels_admin::get_channel_config).put(handlers::channels_admin::set_channel_config),
+            get(handlers::channels_admin::get_channel_config)
+                .put(handlers::channels_admin::set_channel_config),
         )
-        .route("/v1/routing-rules", axum::routing::post(handlers::channels_admin::create_routing_rule))
+        .route(
+            "/v1/routing-rules",
+            axum::routing::post(handlers::channels_admin::create_routing_rule),
+        )
         // Tokenization surface (PAY-10) — publishable-credential callable.
-        .route("/v1/tokens", axum::routing::post(crate::tokens::create_token))
-        .route("/v1/tokens/{token_value}/consume", axum::routing::post(crate::tokens::consume_token))
+        .route(
+            "/v1/tokens",
+            axum::routing::post(crate::tokens::create_token),
+        )
+        .route(
+            "/v1/tokens/{token_value}/consume",
+            axum::routing::post(crate::tokens::consume_token),
+        )
         // SCA challenge handback (PAY-12) + method catalog (PAY-13).
-        .route("/v1/intents/{id}/handback", axum::routing::post(handlers::channels_admin::sca_handback))
+        .route(
+            "/v1/intents/{id}/handback",
+            axum::routing::post(handlers::channels_admin::sca_handback),
+        )
         .route("/v1/methods", get(handlers::channels_admin::method_catalog))
         // Intents (PAY-5): two-phase confirmation surface.
         .route(
             "/v1/payment-intents",
-            get(handlers::intents::list_payment_intents).post(handlers::intents::create_payment_intent),
+            get(handlers::intents::list_payment_intents)
+                .post(handlers::intents::create_payment_intent),
         )
         .route(
             "/v1/payment-intents/{id}/confirm",

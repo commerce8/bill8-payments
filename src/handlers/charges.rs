@@ -47,18 +47,23 @@ pub async fn create_charge(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:charges:write"),
-    ).await?;
+    )
+    .await?;
 
-    let amount: Decimal = req
-        .amount
-        .parse()
-        .map_err(|_| (StatusCode::BAD_REQUEST, "amount must be a decimal string".into()))?;
+    let amount: Decimal = req.amount.parse().map_err(|_| {
+        (
+            StatusCode::BAD_REQUEST,
+            "amount must be a decimal string".into(),
+        )
+    })?;
     if amount <= Decimal::ZERO {
         return Err((StatusCode::BAD_REQUEST, "amount must be positive".into()));
     }
 
     let mut conn = state.pool.begin().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     // Idempotency: a retried charge returns the original record.
     if let Some(key) = req.idempotency_key.as_deref() {
@@ -133,22 +138,28 @@ pub async fn create_charge(
 
     // ── Step 2: channel routing + authorize/capture. Routing errors map
     // to 502 (the routing layer returns plain String errors).
-    let channel = route(&state, &a, &req)
-        .await
-        .map_err(|e| (StatusCode::BAD_GATEWAY, format!("channel routing failed: {e}")))?;
+    let channel = route(&state, &a, &req).await.map_err(|e| {
+        (
+            StatusCode::BAD_GATEWAY,
+            format!("channel routing failed: {e}"),
+        )
+    })?;
     let channel_id = match channel {
         Some(ch) => ch,
         // No capable channel: nothing written, no money moved.
-        None => return Err((StatusCode::PAYMENT_REQUIRED, "no settlement channel available".into())),
+        None => {
+            return Err((
+                StatusCode::PAYMENT_REQUIRED,
+                "no settlement channel available".into(),
+            ))
+        }
     };
-    sqlx::query(
-        "UPDATE payments.charges SET channel_id = $1 WHERE id = $2 AND status = 'pending'",
-    )
-    .bind(channel_id)
-    .bind(charge_id)
-    .execute(&mut *conn)
-    .await
-    .map_err(err_db)?;
+    sqlx::query("UPDATE payments.charges SET channel_id = $1 WHERE id = $2 AND status = 'pending'")
+        .bind(channel_id)
+        .bind(charge_id)
+        .execute(&mut *conn)
+        .await
+        .map_err(err_db)?;
 
     // ── Step 2b: SCA (PAY-12). A challenge-requiring channel holds the
     // charge in `pending` with a single-use handback token; the hosted
@@ -188,13 +199,23 @@ pub async fn create_charge(
     // (on_behalf_of + application_fee_amount) posts ONE atomic three-leg
     // batch (PAY-14 / LED-6).
     let tx_ref = if req.on_behalf_of.is_some() || req.application_fee_amount.is_some() {
-        crate::channels::post_split_to_ledger(&state, a.env_id(), &req, amount).await.map_err(|e| {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("ledger posting failed: {e}"))
-        })?
+        crate::channels::post_split_to_ledger(&state, a.env_id(), &req, amount)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("ledger posting failed: {e}"),
+                )
+            })?
     } else {
-        crate::channels::post_charge_to_ledger(&state, a.env_id(), &req, amount).await.map_err(|e| {
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("ledger posting failed: {e}"))
-        })?
+        crate::channels::post_charge_to_ledger(&state, a.env_id(), &req, amount)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("ledger posting failed: {e}"),
+                )
+            })?
     };
 
     // Guarded terminal transition: pending → succeeded, exactly-once
@@ -275,10 +296,13 @@ pub async fn list_charges(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:charges:read"),
-    ).await?;
+    )
+    .await?;
 
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, a.env_id()).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, a.env_id())
+        .await
+        .map_err(err_db)?;
 
     let rows = sqlx::query(
         r#"SELECT id, env_id, customer_id, payment_method_id, payment_intent_id,
@@ -318,7 +342,8 @@ pub async fn get_charge(
         &a,
         &headers,
         sentin8::shield::EvalTarget::new("bill8:payments:charges:read"),
-    ).await?;
+    )
+    .await?;
     get_charge_row(&state, a.env_id(), id).await
 }
 
@@ -328,7 +353,9 @@ pub(crate) async fn get_charge_row(
     id: Uuid,
 ) -> Result<Json<Charge>, (StatusCode, String)> {
     let mut conn = state.pool.acquire().await.map_err(err_db)?;
-    set_tenant_context(&mut conn, env_id).await.map_err(err_db)?;
+    set_tenant_context(&mut conn, env_id)
+        .await
+        .map_err(err_db)?;
     let row = sqlx::query(
         r#"SELECT id, env_id, customer_id, payment_method_id, payment_intent_id,
                   amount, amount_refunded, currency, status, channel_id,

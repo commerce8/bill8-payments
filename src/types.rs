@@ -13,10 +13,17 @@ use serde::Deserialize;
 pub enum PaymentsError {
     /// The charge is not in a state that allows the transition.
     #[error("illegal state transition: {from} -> {to} on charge {id}")]
-    IllegalTransition { id: uuid::Uuid, from: String, to: String },
+    IllegalTransition {
+        id: uuid::Uuid,
+        from: String,
+        to: String,
+    },
     /// The refund exceeds the remaining refundable amount.
     #[error("refund {requested} exceeds remaining refundable {remaining}")]
-    OverRefund { requested: String, remaining: String },
+    OverRefund {
+        requested: String,
+        remaining: String,
+    },
     /// The referenced charge/customer/method was not found.
     #[error("charge {0} not found")]
     ChargeNotFound(uuid::Uuid),

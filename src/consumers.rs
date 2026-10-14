@@ -85,7 +85,10 @@ async fn resolve_held_charge(state: &AppState, env_id: Uuid, payload: serde_json
         tracing::warn!("payments: review resolution lacks the charge reference — ignoring (the risk service carries it in the resolution payload)");
         return;
     };
-    let status = payload.get("status").and_then(|v| v.as_str()).unwrap_or("declined");
+    let status = payload
+        .get("status")
+        .and_then(|v| v.as_str())
+        .unwrap_or("declined");
 
     let mut conn = match state.pool.acquire().await {
         Ok(c) => c,
@@ -132,7 +135,15 @@ async fn resolve_held_charge(state: &AppState, env_id: Uuid, payload: serde_json
                 .get("idempotency_key")
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string())
-                .or_else(|| Some(format!("review-{}-{charge_id}", payload.get("review_id").and_then(|v| v.as_str()).unwrap_or("x")))),
+                .or_else(|| {
+                    Some(format!(
+                        "review-{}-{charge_id}",
+                        payload
+                            .get("review_id")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("x")
+                    ))
+                }),
         };
         let tx_ref = if on_behalf_of.is_some() || application_fee.is_some() {
             crate::channels::post_split_to_ledger(state, env_id, &charge_req, amount).await
@@ -200,8 +211,12 @@ pub fn spawn_consumers(state: AppState) {
                             while let Some(idx) = buffer.find('\n') {
                                 let line = buffer[..idx].to_string();
                                 buffer.drain(..=idx);
-                                let Some(data) = line.strip_prefix("data: ") else { continue };
-                                if let Ok(msg) = serde_json::from_str::<serde_json::Value>(data.trim()) {
+                                let Some(data) = line.strip_prefix("data: ") else {
+                                    continue;
+                                };
+                                if let Ok(msg) =
+                                    serde_json::from_str::<serde_json::Value>(data.trim())
+                                {
                                     // ACK contract (BUSACK-1): an entry
                                     // stays PENDING in the consumer group
                                     // until ACKed — unacked entries are
@@ -212,17 +227,28 @@ pub fn spawn_consumers(state: AppState) {
                                     // with a payload this consumer ignores
                                     // (seed_env is idempotent; a re-delivery
                                     // costs nothing once acked).
-                                    let message_id = msg.get("message_id").and_then(|v| v.as_str()).unwrap_or("");
-                                    let env_id = msg.get("env_id").and_then(|v| v.as_str())
+                                    let message_id = msg
+                                        .get("message_id")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("");
+                                    let env_id = msg
+                                        .get("env_id")
+                                        .and_then(|v| v.as_str())
                                         .and_then(|s| Uuid::parse_str(s).ok());
-                                    let event_type = msg.get("event_type").and_then(|v| v.as_str()).unwrap_or("");
+                                    let event_type = msg
+                                        .get("event_type")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("");
                                     if event_type == "sentin8:sys:service:updated" {
                                         if let Some(env_id) = env_id {
                                             seed_env(&state, env_id).await;
                                         }
                                     }
                                     if !message_id.is_empty() {
-                                        if let Err(e) = bus.ack("sys", "bill8:payments:envinit", message_id).await {
+                                        if let Err(e) = bus
+                                            .ack("sys", "bill8:payments:envinit", message_id)
+                                            .await
+                                        {
                                             tracing::warn!(error = %e, message_id, "payments: envinit ack failed");
                                         }
                                     }
@@ -230,7 +256,9 @@ pub fn spawn_consumers(state: AppState) {
                             }
                         }
                     }
-                    Err(e) => tracing::warn!(error = %e, "payments envinit consume failed — reconnecting"),
+                    Err(e) => {
+                        tracing::warn!(error = %e, "payments envinit consume failed — reconnecting")
+                    }
                 }
                 tokio::time::sleep(RECONNECT_DELAY).await;
             }
@@ -253,12 +281,22 @@ pub fn spawn_consumers(state: AppState) {
                             while let Some(idx) = buffer.find('\n') {
                                 let line = buffer[..idx].to_string();
                                 buffer.drain(..=idx);
-                                let Some(data) = line.strip_prefix("data: ") else { continue };
-                                if let Ok(msg) = serde_json::from_str::<serde_json::Value>(data.trim()) {
-                                    let env_id = msg.get("env_id").and_then(|v| v.as_str())
+                                let Some(data) = line.strip_prefix("data: ") else {
+                                    continue;
+                                };
+                                if let Ok(msg) =
+                                    serde_json::from_str::<serde_json::Value>(data.trim())
+                                {
+                                    let env_id = msg
+                                        .get("env_id")
+                                        .and_then(|v| v.as_str())
                                         .and_then(|s| Uuid::parse_str(s).ok());
-                                    let event_type = msg.get("event_type").and_then(|v| v.as_str()).unwrap_or("");
-                                    let payload = msg.get("payload").cloned().unwrap_or(msg.clone());
+                                    let event_type = msg
+                                        .get("event_type")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("");
+                                    let payload =
+                                        msg.get("payload").cloned().unwrap_or(msg.clone());
                                     if event_type == "bill8:risk:review:resolved" {
                                         if let Some(env_id) = env_id {
                                             resolve_held_charge(&state, env_id, payload).await;
@@ -268,7 +306,9 @@ pub fn spawn_consumers(state: AppState) {
                             }
                         }
                     }
-                    Err(e) => tracing::warn!(error = %e, "payments review consume failed — reconnecting"),
+                    Err(e) => {
+                        tracing::warn!(error = %e, "payments review consume failed — reconnecting")
+                    }
                 }
                 tokio::time::sleep(RECONNECT_DELAY).await;
             }
