@@ -6,9 +6,6 @@
 //! Bill8:Payments binary — boots on the platform `sentin8::shell`.
 //! See `services/payments/DESIGN.md`.
 
-#[global_allocator]
-static GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 #[allow(dead_code)]
 mod auth;
 #[allow(dead_code)]
