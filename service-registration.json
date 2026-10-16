@@ -14,7 +14,11 @@
           "consumer_group": "bill8:payments:review",
           "action": "resolve_review"
         }
-      ]
+      ],
+      "telemetry_property": {
+        "slug": "payments",
+        "name": "Bill8:Payments Telemetry"
+      }
     }
   ]
 }
