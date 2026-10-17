@@ -674,7 +674,7 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 [[package]]
 name = "bill8"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "async-trait",
  "bill8-billing-contracts",
@@ -698,7 +698,7 @@ dependencies = [
 [[package]]
 name = "bill8-billing-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -710,7 +710,7 @@ dependencies = [
 [[package]]
 name = "bill8-checkout-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -722,7 +722,7 @@ dependencies = [
 [[package]]
 name = "bill8-ledger-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -734,7 +734,7 @@ dependencies = [
 [[package]]
 name = "bill8-merchants-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -776,7 +776,7 @@ dependencies = [
 [[package]]
 name = "bill8-payments-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -788,7 +788,7 @@ dependencies = [
 [[package]]
 name = "bill8-reporting-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -800,7 +800,7 @@ dependencies = [
 [[package]]
 name = "bill8-risk-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -812,7 +812,7 @@ dependencies = [
 [[package]]
 name = "bill8-webhooks-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
@@ -824,7 +824,7 @@ dependencies = [
 [[package]]
 name = "bill8-wire-contracts"
 version = "0.1.0"
-source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.4#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
+source = "git+https://github.com/commerce8/bill8-sdk?tag=bill8-v0.5.5#612d58c04004bb0f6d5e0d3fd4b8c085674a0fa7"
 dependencies = [
  "chrono",
  "serde",
