@@ -145,6 +145,16 @@ pub struct MethodCatalogEntry {
 /// methods register as channel data; the catalog reads from the
 /// channels' capability matrices at runtime (methods ∪ across
 /// channels).
+#[utoipa::path(
+    get,
+    path = "/v1/methods",
+    responses(
+        (status = 200, description = "Capability matrix of the built-in method types", body = Vec<MethodCatalogEntry>),
+        (status = 403, description = "Missing payments read scope"),
+    ),
+    security(("bill8:payments:read" = [])),
+    tag = "payments",
+)]
 pub async fn method_catalog(
     State(state): State<AppState>,
     headers: HeaderMap,

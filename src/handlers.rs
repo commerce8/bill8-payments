@@ -68,6 +68,15 @@ pub async fn emit_event(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/v1/health",
+    responses(
+        (status = 200, description = "Liveness (version, build)", body = serde_json::Value),
+    ),
+    security(),
+    tag = "meta",
+)]
 /// Health probe payload.
 pub async fn health() -> axum::Json<serde_json::Value> {
     axum::Json(serde_json::json!({

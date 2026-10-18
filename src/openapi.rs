@@ -12,6 +12,7 @@ use crate::handlers;
 /// The payments service's OpenAPI document.
 #[derive(OpenApi)]
 #[openapi(paths(
+    handlers::health,
     handlers::customers::create_customer,
     handlers::customers::list_customers,
     handlers::charges::create_charge,
@@ -33,5 +34,9 @@ use crate::handlers;
     handlers::channels_admin::set_channel_config,
     handlers::channels_admin::get_channel_config,
     handlers::channels_admin::create_routing_rule,
+    handlers::channels_admin::method_catalog,
+    handlers::channels_admin::sca_handback,
+    crate::tokens::create_token,
+    crate::tokens::consume_token,
 ))]
 pub struct PaymentsOpenApi;

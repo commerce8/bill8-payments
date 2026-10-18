@@ -415,6 +415,93 @@
         ]
       }
     },
+    "/v1/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Health probe payload.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Liveness (version, build)",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/v1/intents/{id}/handback": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "`POST /v1/intents/{id}/handback` — the SCA challenge handback\n(PAY-12). Completes a held charge from the CHANNEL-VERIFIED result —\nnever a client-asserted outcome. The handback token is single-use.",
+        "operationId": "sca_handback",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Held charge completed"
+          },
+          "404": {
+            "description": "No held charge for the intent"
+          },
+          "409": {
+            "description": "Handback token already used or expired"
+          }
+        },
+        "security": [
+          {
+            "bill8:payments:intents:write": []
+          }
+        ]
+      }
+    },
+    "/v1/methods": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "The static capability matrix of the built-in method types. New\nmethods register as channel data; the catalog reads from the\nchannels' capability matrices at runtime (methods ∪ across\nchannels).",
+        "operationId": "method_catalog",
+        "responses": {
+          "200": {
+            "description": "Capability matrix of the built-in method types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MethodCatalogEntry"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing payments read scope"
+          }
+        },
+        "security": [
+          {
+            "bill8:payments:read": []
+          }
+        ]
+      }
+    },
     "/v1/payment-intents": {
       "get": {
         "tags": [
@@ -720,6 +807,74 @@
         "security": [
           {
             "bill8:payments:setup-intents:write": []
+          }
+        ]
+      }
+    },
+    "/v1/tokens": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "`POST /v1/tokens` — mint a single-use token for a payment method.",
+        "description": "Authorization: either the full `bill8:payments:tokens:write`\nscope, OR a publishable credential (the Shield scope-mirror permits\nthe tokenization action for the publishable scope) — a publishable\ntoken can do nothing else (every other payments action requires its\nown scope).",
+        "operationId": "create_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Token minted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing tokenization scope"
+          },
+          "404": {
+            "description": "Payment method not found"
+          }
+        },
+        "security": [
+          {
+            "bill8:payments:tokens:write": []
+          }
+        ]
+      }
+    },
+    "/v1/tokens/{token_value}/consume": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "`POST /v1/tokens/{token_value}/consume` — consume a token\n(single-use guard: the first consume wins; every later consume of the\nsame token is rejected).",
+        "operationId": "consume_token",
+        "responses": {
+          "200": {
+            "description": "Token consumed — the payment method id"
+          },
+          "404": {
+            "description": "Token not found"
+          },
+          "409": {
+            "description": "Token already used or expired"
+          }
+        },
+        "security": [
+          {
+            "bill8:payments:tokens:write": []
           }
         ]
       }
@@ -1111,6 +1266,20 @@
           }
         }
       },
+      "CreateTokenRequest": {
+        "type": "object",
+        "description": "Request body for `POST /v1/tokens`.",
+        "required": [
+          "payment_method_id"
+        ],
+        "properties": {
+          "payment_method_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The payment method to tokenize (must already exist; the token is\na single-use reference to it — card data itself never transits)."
+          }
+        }
+      },
       "Customer": {
         "type": "object",
         "description": "A payment customer, optionally linked to a platform identity.",
@@ -1200,6 +1369,45 @@
           "status": {
             "type": "string",
             "description": "Lifecycle state (`needs_response` / `under_review` / `won` / `lost`)."
+          }
+        }
+      },
+      "HandbackRequest": {
+        "type": "object",
+        "description": "Request body for the SCA handback.",
+        "required": [
+          "handback_token"
+        ],
+        "properties": {
+          "handback_token": {
+            "type": "string",
+            "description": "The single-use handback token issued at challenge creation."
+          }
+        }
+      },
+      "MethodCatalogEntry": {
+        "type": "object",
+        "description": "The payment-method catalog (PAY-13) — method types as DATA with\ncapability metadata; routing matches a method to a capable channel.\nAdding a method type is data, not code.",
+        "required": [
+          "method_type",
+          "recurring",
+          "regions"
+        ],
+        "properties": {
+          "method_type": {
+            "type": "string",
+            "description": "The method type identifier (`card` / `bank_debit` / `wallet`)."
+          },
+          "recurring": {
+            "type": "boolean",
+            "description": "Whether the method supports recurring charges."
+          },
+          "regions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The regions the method is available in."
           }
         }
       },
@@ -1398,6 +1606,29 @@
               "type": "string"
             },
             "description": "Storage references to evidence documents."
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "description": "Response of `POST /v1/tokens`.",
+        "required": [
+          "id",
+          "token_value",
+          "expires_at"
+        ],
+        "properties": {
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "token_value": {
+            "type": "string",
+            "description": "Single-use token value (short-TTL; consumed on first use)."
           }
         }
       }
