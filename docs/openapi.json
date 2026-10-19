@@ -424,10 +424,12 @@
         "operationId": "health",
         "responses": {
           "200": {
-            "description": "Liveness (version, build)",
+            "description": "Liveness (status, service, version, build)",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/HealthBuild"
+                }
               }
             }
           }
@@ -1382,6 +1384,34 @@
           "handback_token": {
             "type": "string",
             "description": "The single-use handback token issued at challenge creation."
+          }
+        }
+      },
+      "HealthBuild": {
+        "type": "object",
+        "description": "The liveness payload every Bill8 service returns at\n`GET /v1/health` (tag `meta`): status, serving service short\nname, build identity.",
+        "required": [
+          "status",
+          "service",
+          "version",
+          "build"
+        ],
+        "properties": {
+          "build": {
+            "type": "string",
+            "description": "Build hash (`sentin8::build_info::build_hash()`)."
+          },
+          "service": {
+            "type": "string",
+            "description": "The serving service short name (e.g. `ledger`)."
+          },
+          "status": {
+            "type": "string",
+            "description": "Always `ok` on a live instance."
+          },
+          "version": {
+            "type": "string",
+            "description": "Build identity id (`sentin8::build_info::id()`)."
           }
         }
       },
