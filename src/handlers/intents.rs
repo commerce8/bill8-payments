@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! Payment-intent and setup-intent handlers (PAY-5): the two-phase
-//! confirmation surface. An intent reserves nothing — it records the
+//! confirmation surface. An intent reserves nothing - it records the
 //! customer's WILLINGNESS to pay (or to save a method); `confirm` is
 //! the single guarded transition into processing, and the terminal
 //! states (`succeeded`/`failed`) never regress (payments DESIGN.md §3).
@@ -22,7 +22,7 @@ use bill8::payments::contracts::{
     CreatePaymentIntentRequest, CreateSetupIntentRequest, PaymentIntent, SetupIntent,
 };
 
-/// `POST /v1/payment-intents` — create an intent in
+/// `POST /v1/payment-intents` - create an intent in
 /// `requires_confirmation` (no money moves).
 #[utoipa::path(
     post,
@@ -112,7 +112,7 @@ pub async fn create_payment_intent(
     Ok(Json(get_intent_row(&state, a.env_id(), id).await?))
 }
 
-/// `GET /v1/payment-intents` — list intents for the env.
+/// `GET /v1/payment-intents` - list intents for the env.
 #[utoipa::path(
     get,
     path = "/v1/payment-intents",
@@ -153,7 +153,7 @@ pub async fn list_payment_intents(
     Ok(Json(rows.iter().map(row_to_intent).collect()))
 }
 
-/// `POST /v1/payment-intents/{id}/confirm` — the guarded
+/// `POST /v1/payment-intents/{id}/confirm` - the guarded
 /// `requires_confirmation → processing` transition. Terminal states
 /// never regress; confirming a terminal intent is a 409.
 #[utoipa::path(
@@ -216,7 +216,7 @@ pub async fn confirm_payment_intent(
     Ok(Json(get_intent_row(&state, a.env_id(), id).await?))
 }
 
-/// `POST /v1/setup-intents` — save a method for later use (no charge).
+/// `POST /v1/setup-intents` - save a method for later use (no charge).
 #[utoipa::path(
     post,
     path = "/v1/setup-intents",
@@ -285,7 +285,7 @@ pub async fn create_setup_intent(
     Ok(Json(row_to_setup(&row)))
 }
 
-/// `GET /v1/setup-intents` — list setup intents for the env.
+/// `GET /v1/setup-intents` - list setup intents for the env.
 #[utoipa::path(
     get,
     path = "/v1/setup-intents",
@@ -325,7 +325,7 @@ pub async fn list_setup_intents(
     Ok(Json(rows.iter().map(row_to_setup).collect()))
 }
 
-/// `POST /v1/setup-intents/{id}/confirm` — the guarded
+/// `POST /v1/setup-intents/{id}/confirm` - the guarded
 /// `requires_confirmation → processing` transition for setup intents.
 #[utoipa::path(
     post,

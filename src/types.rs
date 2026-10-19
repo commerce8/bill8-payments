@@ -3,11 +3,11 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Payments domain types — internal shapes and the domain error surface.
+//! Payments domain types - internal shapes and the domain error surface.
 
 use serde::Deserialize;
 
-/// Domain errors — every variant maps to an HTTP status and a
+/// Domain errors - every variant maps to an HTTP status and a
 /// `no rows written` guarantee on the money path.
 #[derive(Debug, thiserror::Error)]
 pub enum PaymentsError {

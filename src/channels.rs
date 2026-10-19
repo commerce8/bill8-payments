@@ -3,18 +3,18 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Settlement-channel layer (payments DESIGN.md §2b) — the rails
+//! Settlement-channel layer (payments DESIGN.md §2b) - the rails
 //! abstraction. Four parts:
 //!
-//! 1. **Adapter contract** — `ChannelAdapter` (`authorize`, `capture`,
+//! 1. **Adapter contract** - `ChannelAdapter` (`authorize`, `capture`,
 //!    `refund`, `dispute_ingest`, `settlement_report`). Any rails
 //!    implementation conforms; channel identity is registry data, never
 //!    core code.
-//! 2. **Runtime registry** — `payments.channels` rows with a capability
+//! 2. **Runtime registry** - `payments.channels` rows with a capability
 //!    matrix (methods, regions, recurring, mode).
-//! 3. **Selection & routing** — `channel_configs` + declarative
+//! 3. **Selection & routing** - `channel_configs` + declarative
 //!    `routing_rules` (method, region, priority); fails closed.
-//! 4. **Reconciliation** — `settlements` matched against charges;
+//! 4. **Reconciliation** - `settlements` matched against charges;
 //!    discrepancies flagged, never silently passed.
 //!
 //! The ledger posting is the ONLY money movement; a channel never
@@ -45,13 +45,13 @@ pub enum ChannelOutcome {
 pub trait ChannelAdapter: Send + Sync {
     /// Authorize (and capture, when the channel authorizes-and-captures
     /// in one step) a charge. Returns the channel's terminal success or
-    /// a decline/error — the caller writes nothing on failure.
+    /// a decline/error - the caller writes nothing on failure.
     async fn authorize(&self, charge: &CreateChargeRequest) -> Result<bool, String>;
     /// Refund a previously captured charge.
     async fn refund(&self, charge_id: Uuid, amount: Decimal) -> Result<(), String>;
 }
 
-/// The built-in simulation channel (test mode): deterministic — always
+/// The built-in simulation channel (test mode): deterministic - always
 /// succeeds, EXCEPT for the documented decline instruments. Live external
 /// channels register their own adapters.
 pub struct SimulationAdapter;
@@ -60,7 +60,7 @@ pub struct SimulationAdapter;
 /// these minor-unit patterns selects the outcome:
 /// - `…00.02` → decline
 /// - `…00.04` → timeout (treated as decline)
-/// - `…00.06` → SCA required (challenge — the charge holds pending)
+/// - `…00.06` → SCA required (challenge - the charge holds pending)
 ///
 /// All other amounts succeed.
 const TEST_DECLINE_SUFFIX: &str = "00.02";
@@ -76,7 +76,7 @@ pub enum SimOutcome {
     Decline,
     /// Timeout (terminal failure).
     Timeout,
-    /// SCA required — the charge holds pending a challenge handback
+    /// SCA required - the charge holds pending a challenge handback
     /// (PAY-12).
     ScaRequired,
 }
@@ -123,9 +123,9 @@ pub async fn screen(
     charge_id: Uuid,
 ) -> Result<ChannelOutcome, String> {
     let Some(ref client) = state.config.risk_http else {
-        // No risk workload: fail closed — no charge proceeds unscreened
+        // No risk workload: fail closed - no charge proceeds unscreened
         // in production; dev mode documents this explicitly.
-        tracing::warn!("risk workload transport absent — failing closed");
+        tracing::warn!("risk workload transport absent - failing closed");
         return Err("risk screening unavailable".into());
     };
     let resp = client
@@ -155,7 +155,7 @@ pub async fn screen(
 }
 
 /// Route a charge to a channel: the per-merchant default, then the
-/// declarative rules (method, region, priority). Fails closed — an
+/// declarative rules (method, region, priority). Fails closed - an
 /// evaluation error selects no channel and captures nothing.
 ///
 /// This initial engine routes through the built-in simulation adapter;
@@ -215,7 +215,7 @@ pub async fn route(
 }
 
 /// Post a refund reversal to the ledger via its public API (the ONLY
-/// money movement — refunds reverse through the same double-entry path).
+/// money movement - refunds reverse through the same double-entry path).
 ///
 /// The caller supplies the charge's currency (the refund request itself
 /// does not carry one).
@@ -230,7 +230,7 @@ pub async fn post_refund_to_ledger(
         return Err("ledger workload transport absent".into());
     };
 
-    // Resolve the legs through the ledger's public API — reverse the
+    // Resolve the legs through the ledger's public API - reverse the
     // charge's posting (debit connected_reserved, credit available).
     let credit = resolve_platform_balance(state, client, "available").await?;
     let debit = resolve_platform_balance(state, client, "connected_reserved").await?;
@@ -263,7 +263,7 @@ pub async fn post_refund_to_ledger(
 }
 /// Post a split-at-charge movement to the ledger via its public API
 /// (PAY-14 / LED-6): ONE atomic batch whose legs sum EXACTLY to the
-/// charge amount — debit the payer's side, credit the connected
+/// charge amount - debit the payer's side, credit the connected
 /// account's available balance, credit the platform fee. An over-fee
 /// (fee ≥ amount) is rejected pre-write.
 pub async fn post_split_to_ledger(
@@ -310,7 +310,7 @@ pub async fn post_split_to_ledger(
     )
     .await?;
 
-    // Fee leg (the platform's share) — only when a fee is charged.
+    // Fee leg (the platform's share) - only when a fee is charged.
     if fee > Decimal::ZERO {
         post_ledger_leg(
             state,
@@ -370,7 +370,7 @@ async fn post_ledger_leg(
 }
 
 /// Resolve a named platform balance via the ledger's PUBLIC API (never
-/// a direct table read — the payments role holds no grant on the ledger
+/// a direct table read - the payments role holds no grant on the ledger
 /// schema; cross-service access goes through the API, principles §4.7).
 /// The ledger resolves the tenant from the workload certificate's own
 /// context, so no env routing is needed here.

@@ -3,7 +3,7 @@
 -- SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 -- SPDX-License-Identifier: Apache-2.0
 
--- Bill8:Payments — the service's own schema `payments`:
+-- Bill8:Payments - the service's own schema `payments`:
 -- domain tables + payments.outbox / payments.audit_journal producer
 -- tables, all FORCE-RLS env-scoped. Charges are append-only; refunds and
 -- disputes are compensating records; a channel never mutates balances.

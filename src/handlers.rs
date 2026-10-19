@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Payments HTTP handlers — the charge lifecycle.
+//! Payments HTTP handlers - the charge lifecycle.
 //!
 //! **Charge sequence** (payments DESIGN.md §2): Shield gate →
 //! idempotency → inline risk screening (fail-closed) → channel routing
@@ -32,7 +32,7 @@ pub struct AppState {
     pub pool: sqlx::PgPool,
     /// Cert-presenting Bus client.
     pub bus_client: sentin8::bus::client::BusClient,
-    /// Shield policy engine — step 5 is the ONLY gate.
+    /// Shield policy engine - step 5 is the ONLY gate.
     pub policy: Arc<Engine>,
 }
 

@@ -19,7 +19,7 @@ const PG_ROLES: &[PgRole] = &[PgRole {
     cross_schema_grants: &[],
 }];
 
-/// Workload scope grants — one entry per workload. The cross-service
+/// Workload scope grants - one entry per workload. The cross-service
 /// workloads (`bill8-payments-ledger`, `bill8-payments-risk`)
 /// hold ONLY the public-API scopes they call; a vertical service never
 /// receives grants on another vertical's tables.
@@ -59,7 +59,7 @@ const M2M_GRANTS: &[M2mGrant] = &[
         scopes: &["sentin8:sys:instances:read"],
     },
     // Cross-service: posts balance transactions through the ledger's
-    // PUBLIC API (charges/refunds/dispute reversals — the only money path).
+    // PUBLIC API (charges/refunds/dispute reversals - the only money path).
     M2mGrant {
         workload: "bill8-payments-ledger",
         scopes: &["bill8:ledger:balance-transactions:write"],
@@ -196,7 +196,7 @@ const ADMIN_UI_PAGES: &[AdminUiPage] = &[
     },
 ];
 
-/// The scope-mirror Shield text — action-granular permits over the LIVE
+/// The scope-mirror Shield text - action-granular permits over the LIVE
 /// effective scope set (the exact step-5 gates this service evaluates).
 pub const SCOPE_MIRROR_POLICIES: &str = "permit(principal, action == Action::\"bill8:payments:customers:read\", resource) when { principal.scopes.contains(\"bill8:payments:customers:read\") };\npermit(principal, action == Action::\"bill8:payments:customers:read\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"bill8:payments:customers:read\", resource) when { principal.scopes.contains(\"sentin8:sys:org:admin\") };\npermit(principal, action == Action::\"bill8:payments:customers:read\", resource) when { principal.scopes.contains(\"sentin8:sys:env:admin\") };\npermit(principal, action == Action::\"bill8:payments:customers:write\", resource) when { principal.scopes.contains(\"bill8:payments:customers:write\") };\npermit(principal, action == Action::\"bill8:payments:customers:write\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"bill8:payments:charges:read\", resource) when { principal.scopes.contains(\"bill8:payments:charges:read\") };\npermit(principal, action == Action::\"bill8:payments:charges:read\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"bill8:payments:charges:write\", resource) when { principal.scopes.contains(\"bill8:payments:charges:write\") };\npermit(principal, action == Action::\"bill8:payments:charges:write\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"bill8:payments:charges:write\", resource) when { principal.scopes.contains(\"sentin8:sys:org:admin\") };\npermit(principal, action == Action::\"bill8:payments:charges:write\", resource) when { principal.scopes.contains(\"sentin8:sys:env:admin\") };\npermit(principal, action == Action::\"bill8:payments:refunds:read\", resource) when { principal.scopes.contains(\"bill8:payments:refunds:read\") };\npermit(principal, action == Action::\"bill8:payments:refunds:write\", resource) when { principal.scopes.contains(\"bill8:payments:refunds:write\") };\npermit(principal, action == Action::\"bill8:payments:refunds:write\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\npermit(principal, action == Action::\"bill8:payments:disputes:read\", resource) when { principal.scopes.contains(\"bill8:payments:disputes:read\") };\npermit(principal, action == Action::\"bill8:payments:disputes:write\", resource) when { principal.scopes.contains(\"bill8:payments:disputes:write\") };\npermit(principal, action == Action::\"bill8:payments:channels:read\", resource) when { principal.scopes.contains(\"bill8:payments:channels:read\") };\npermit(principal, action == Action::\"bill8:payments:routing:write\", resource) when { principal.scopes.contains(\"bill8:payments:routing:write\") };\npermit(principal, action == Action::\"bill8:payments:routing:write\", resource) when { principal.scopes.contains(\"sentin8:sys:admin\") };\n";
 
@@ -211,7 +211,7 @@ const POLICIES: &[PolicySetDecl] = &[PolicySetDecl {
 
 // Event triggers are declarative in `vertical-registry.json` (the
 // review-resolution consumer group), mirroring the platform's registry
-// pattern — `Registration.event_triggers` stays empty here.
+// pattern - `Registration.event_triggers` stays empty here.
 const EVENT_TRIGGERS: &[sentin8::registration::EventTriggerDecl] = &[];
 
 const SQL_1_INIT: &str = include_str!("../sql/init.sql");

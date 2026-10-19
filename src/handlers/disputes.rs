@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Dispute handlers — challenges with evidence (Storage references) and
+//! Dispute handlers - challenges with evidence (Storage references) and
 //! the dispute lifecycle. Channel/routing-rule handlers live in
 //! `channels_admin.rs`.
 
@@ -18,7 +18,7 @@ use uuid::Uuid;
 use crate::auth;
 use crate::handlers::{err_db, set_tenant_context, AppState};
 
-/// `POST /v1/disputes` — open a dispute on a charge.
+/// `POST /v1/disputes` - open a dispute on a charge.
 #[utoipa::path(
     post,
     path = "/v1/disputes",
@@ -104,7 +104,7 @@ pub async fn create_dispute(
     ))
 }
 
-/// `GET /v1/disputes` — list disputes.
+/// `GET /v1/disputes` - list disputes.
 #[utoipa::path(
     get,
     path = "/v1/disputes",
@@ -155,7 +155,7 @@ pub async fn list_disputes(
     ))
 }
 
-/// `POST /v1/disputes/{id}/evidence` — submit evidence (Storage refs).
+/// `POST /v1/disputes/{id}/evidence` - submit evidence (Storage refs).
 #[utoipa::path(
     post,
     path = "/v1/disputes/{id}/evidence",
@@ -207,12 +207,12 @@ pub struct ResolveDisputeRequest {
     pub outcome: String,
 }
 
-/// `POST /v1/disputes/{id}/resolve` — close a dispute with an outcome
+/// `POST /v1/disputes/{id}/resolve` - close a dispute with an outcome
 /// (PAY-6). A `lost` dispute claws the funds back via a ledger
 /// reversal transaction (the ONLY money movement) and returns the
 /// charge to `succeeded` minus the disputed amount; a `won` dispute
 /// keeps the charge as-is. The `under_review → won|lost` transition is
-/// guarded — resolving twice is a 409, never a second clawback.
+/// guarded - resolving twice is a 409, never a second clawback.
 #[utoipa::path(
     post,
     path = "/v1/disputes/{id}/resolve",
@@ -275,7 +275,7 @@ pub async fn resolve_dispute(
     // A lost dispute claws the funds back: one ledger reversal for the
     // disputed amount (the ONLY money movement), then the charge
     // returns to succeeded (it keeps its balance_transaction minus the
-    // clawed amount — the reversal transaction is the record).
+    // clawed amount - the reversal transaction is the record).
     if req.outcome == "lost" {
         let refund_req = bill8::payments::contracts::CreateRefundRequest {
             charge_id,

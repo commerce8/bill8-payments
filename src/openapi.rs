@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! OpenAPI spec for the Bill8:Payments API — utoipa-generated.
+//! OpenAPI spec for the Bill8:Payments API - utoipa-generated.
 
 use utoipa::OpenApi;
 

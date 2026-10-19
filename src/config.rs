@@ -22,11 +22,11 @@ pub struct PaymentsConfig {
     pub sentin8_auth_jwks_url: String,
     /// Bus base URL (outbox relay target).
     pub sentin8_bus_url: String,
-    /// Bill8:Ledger base URL — the ONLY money-movement path (charges,
+    /// Bill8:Ledger base URL - the ONLY money-movement path (charges,
     /// refunds, dispute reversals post through its public API via the
     /// `bill8-payments-ledger` workload certificate).
     pub bill8_ledger_url: String,
-    /// Bill8:Risk base URL — inline pre-authorization screening via
+    /// Bill8:Risk base URL - inline pre-authorization screening via
     /// the `bill8-payments-risk` workload certificate.
     pub bill8_risk_url: String,
     /// Stream family this service produces to.
@@ -34,7 +34,7 @@ pub struct PaymentsConfig {
     /// Shared Auth client (discovery + JWKS caches reused).
     pub sentin8_auth_client: AuthClient,
     /// Certificate-presenting transport for the service's own workload
-    /// identity (CERTFREE-4V — no M2M token exists).
+    /// identity (CERTFREE-4V - no M2M token exists).
     pub m2m_http: Option<reqwest::Client>,
     /// Certificate-presenting transport for the cross-service ledger
     /// workload (posts balance transactions).

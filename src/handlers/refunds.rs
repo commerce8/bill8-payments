@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Refund handlers — compensating records bounded by the charge's
+//! Refund handlers - compensating records bounded by the charge's
 //! remaining refundable amount (row-lock serialized; PAY-3 invariants).
 
 use axum::extract::State;
@@ -18,7 +18,7 @@ use crate::auth;
 use crate::handlers::{err_db, set_tenant_context, AppState};
 use crate::types::PaymentsError;
 
-/// `POST /v1/refunds` — refund a charge (bounded).
+/// `POST /v1/refunds` - refund a charge (bounded).
 #[utoipa::path(
     post,
     path = "/v1/refunds",
@@ -26,7 +26,7 @@ use crate::types::PaymentsError;
     responses(
         (status = 200, description = "Refund succeeded", body = Refund),
         (status = 403, description = "Missing bill8:payments:refunds:write"),
-        (status = 422, description = "Over-refund / non-succeeded charge — nothing written"),
+        (status = 422, description = "Over-refund / non-succeeded charge - nothing written"),
     ),
     security(("bill8:payments:refunds:write" = [])),
     tag = "payments",
@@ -66,7 +66,7 @@ pub async fn create_refund(
         }
     }
 
-    // Row-lock the charge — serializes the refundable computation.
+    // Row-lock the charge - serializes the refundable computation.
     let charge = sqlx::query(
         "SELECT id, amount, amount_refunded, status FROM payments.charges WHERE id = $1 FOR UPDATE",
     )
@@ -175,7 +175,7 @@ pub async fn create_refund(
     Ok(Json(row_to_refund(&row)))
 }
 
-/// `GET /v1/refunds` — list refunds.
+/// `GET /v1/refunds` - list refunds.
 #[utoipa::path(
     get,
     path = "/v1/refunds",

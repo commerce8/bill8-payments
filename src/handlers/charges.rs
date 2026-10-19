@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Charge handlers — the append-only money-capture engine.
+//! Charge handlers - the append-only money-capture engine.
 //!
 //! The charge is `succeeded` only after channel terminal success AND the
 //! ledger posting commit. A channel failure or blocked screening writes
@@ -22,16 +22,16 @@ use crate::channels::{route, ChannelOutcome};
 use crate::handlers::{emit_event, err_db, set_tenant_context, AppState};
 use crate::types::ListChargesQuery;
 
-/// `POST /v1/charges` — create a charge through a settlement channel.
+/// `POST /v1/charges` - create a charge through a settlement channel.
 #[utoipa::path(
     post,
     path = "/v1/charges",
     request_body = CreateChargeRequest,
     responses(
         (status = 200, description = "Charge succeeded", body = Charge),
-        (status = 402, description = "Screening blocked / channel declined — nothing written"),
+        (status = 402, description = "Screening blocked / channel declined - nothing written"),
         (status = 403, description = "Missing bill8:payments:charges:write"),
-        (status = 422, description = "Domain rejection — nothing written"),
+        (status = 422, description = "Domain rejection - nothing written"),
     ),
     security(("bill8:payments:charges:write" = [])),
     tag = "payments",
@@ -81,7 +81,7 @@ pub async fn create_charge(
         }
     }
 
-    // ── Step 0: persist the charge as `pending` — the durable record
+    // ── Step 0: persist the charge as `pending` - the durable record
     // the screening context references (payload completeness: the risk
     // service's resolution event carries THIS charge id; a resolved
     // review completes the held charge with no cross-service read).
@@ -107,7 +107,7 @@ pub async fn create_charge(
     .map_err(err_db)?;
 
     // ── Step 1: inline risk screening (fail-closed; the screening call
-    // itself is NOT in the tx — a blocked outcome prevents all writes).
+    // itself is NOT in the tx - a blocked outcome prevents all writes).
     // The screening context carries the charge reference (payload
     // completeness, §4.14): a review resolution can complete THIS
     // charge without any cross-service table read.
@@ -116,7 +116,7 @@ pub async fn create_charge(
         Ok(ChannelOutcome::Allow) => {}
         Ok(ChannelOutcome::Review) => {
             // The screening opened a review: HOLD the charge as pending
-            // (no money moved) — the risk service's resolution event
+            // (no money moved) - the risk service's resolution event
             // completes or fails it (consumers::resolve_held_charge).
             conn.commit().await.map_err(err_db)?;
             return get_charge_row(&state, a.env_id(), charge_id).await;
@@ -164,7 +164,7 @@ pub async fn create_charge(
     // ── Step 2b: SCA (PAY-12). A challenge-requiring channel holds the
     // charge in `pending` with a single-use handback token; the hosted
     // checkout redirects and the handback endpoint completes it from
-    // the CHANNEL-VERIFIED result — never a client assertion.
+    // the CHANNEL-VERIFIED result - never a client assertion.
     if crate::channels::sim_outcome(&req.amount) == crate::channels::SimOutcome::ScaRequired {
         let handback = format!("hbk_{}", Uuid::new_v4().simple());
         sqlx::query(
@@ -193,7 +193,7 @@ pub async fn create_charge(
         return Ok(Json(charge));
     }
 
-    // ── Step 3: ledger posting — the ONLY money movement. A ledger
+    // ── Step 3: ledger posting - the ONLY money movement. A ledger
     // failure fails the charge with no phantom success (the guarded
     // transition below never fires). A split-at-charge
     // (on_behalf_of + application_fee_amount) posts ONE atomic three-leg
@@ -271,7 +271,7 @@ pub async fn create_charge(
     Ok(Json(charge))
 }
 
-/// `GET /v1/charges` — list charges.
+/// `GET /v1/charges` - list charges.
 #[utoipa::path(
     get,
     path = "/v1/charges",
@@ -320,7 +320,7 @@ pub async fn list_charges(
     Ok(Json(rows.iter().map(row_to_charge).collect()))
 }
 
-/// `GET /v1/charges/{id}` — read one charge.
+/// `GET /v1/charges/{id}` - read one charge.
 #[utoipa::path(
     get,
     path = "/v1/charges/{id}",

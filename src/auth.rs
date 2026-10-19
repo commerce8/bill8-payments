@@ -3,8 +3,8 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Auth token verification for Bill8:Payments (steps 1–4). Step 5 —
-//! the Shield gate — is the authorization decision.
+//! Auth token verification for Bill8:Payments (steps 1-4). Step 5 -
+//! the Shield gate - is the authorization decision.
 
 use axum::http::{HeaderMap, StatusCode};
 

@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Customer handlers — the customer registry (holder-scoped).
+//! Customer handlers - the customer registry (holder-scoped).
 
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
@@ -15,7 +15,7 @@ use uuid::Uuid;
 use crate::auth;
 use crate::handlers::{emit_event, err_db, set_tenant_context, AppState};
 
-/// `POST /v1/customers` — create a customer.
+/// `POST /v1/customers` - create a customer.
 #[utoipa::path(
     post,
     path = "/v1/customers",
@@ -84,7 +84,7 @@ pub async fn create_customer(
     Ok(Json(customer))
 }
 
-/// `GET /v1/customers` — list customers.
+/// `GET /v1/customers` - list customers.
 #[utoipa::path(
     get,
     path = "/v1/customers",

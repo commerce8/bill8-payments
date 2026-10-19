@@ -5,9 +5,9 @@
 
 //! Sentin8:Bus consumers for Bill8:Payments (ENV-1 + RSK-3):
 //!
-//! - `sys` family, group `bill8:payments:envinit` — idempotent
+//! - `sys` family, group `bill8:payments:envinit` - idempotent
 //!   per-tenant seeding on `sentin8:sys:service:updated {enabled}`.
-//! - `risk` family, group `bill8:payments:review` — resolves held
+//! - `risk` family, group `bill8:payments:review` - resolves held
 //!   charges when reviews resolve (approved → complete; declined →
 //!   fail; exactly-once via the terminal-state guard).
 
@@ -50,7 +50,7 @@ async fn seed_env(state: &AppState, env_id: Uuid) {
     match sim {
         Ok(row) => {
             let channel_id: Uuid = row.get("id");
-            // Default-channel config (only when absent — idempotent).
+            // Default-channel config (only when absent - idempotent).
             sqlx::query(
                 r#"INSERT INTO payments.channel_configs (env_id, default_channel)
                    VALUES ($1, $2)
@@ -70,9 +70,9 @@ async fn seed_env(state: &AppState, env_id: Uuid) {
 
 /// Resolve a held charge when its review resolves (RSK-3 wiring).
 /// The resolution event's payload carries the CHARGE reference
-/// (payload completeness, architecture-principles §4.14 — the consumer
+/// (payload completeness, architecture-principles §4.14 - the consumer
 /// never reads the risk service's tables; a cross-schema grant is a
-/// defect). Approved → complete the charge (ledger posting — the ONLY
+/// defect). Approved → complete the charge (ledger posting - the ONLY
 /// money movement); declined → fail it (no money moved). Exactly-once:
 /// the guarded `status = 'pending'` transition makes a duplicate
 /// resolution a no-op.
@@ -82,7 +82,7 @@ async fn resolve_held_charge(state: &AppState, env_id: Uuid, payload: serde_json
         .and_then(|v| v.as_str())
         .and_then(|s| Uuid::parse_str(s).ok())
     else {
-        tracing::warn!("payments: review resolution lacks the charge reference — ignoring (the risk service carries it in the resolution payload)");
+        tracing::warn!("payments: review resolution lacks the charge reference - ignoring (the risk service carries it in the resolution payload)");
         return;
     };
     let status = payload
@@ -110,7 +110,7 @@ async fn resolve_held_charge(state: &AppState, env_id: Uuid, payload: serde_json
     .fetch_optional(&mut *conn)
     .await;
     let Ok(Some(held)) = held else {
-        return; // Not pending — a duplicate resolution is a no-op.
+        return; // Not pending - a duplicate resolution is a no-op.
     };
 
     let amount: rust_decimal::Decimal = held.get("amount");
@@ -121,8 +121,8 @@ async fn resolve_held_charge(state: &AppState, env_id: Uuid, payload: serde_json
 
     if status == "approved" {
         // Complete the held charge: routing is already satisfied (the
-        // screening passed review); post to the ledger — the ONLY money
-        // movement — then the guarded terminal transition.
+        // screening passed review); post to the ledger - the ONLY money
+        // movement - then the guarded terminal transition.
         let charge_req = bill8::payments::contracts::CreateChargeRequest {
             customer_id: None,
             payment_method_id: None,
@@ -219,7 +219,7 @@ pub fn spawn_consumers(state: AppState) {
                                 {
                                     // ACK contract (BUSACK-1): an entry
                                     // stays PENDING in the consumer group
-                                    // until ACKed — unacked entries are
+                                    // until ACKed - unacked entries are
                                     // re-delivered by bus's XAUTOCLAIM
                                     // every 10s forever, starving the
                                     // produce path fleet-wide. Ack EVERY
@@ -257,7 +257,7 @@ pub fn spawn_consumers(state: AppState) {
                         }
                     }
                     Err(e) => {
-                        tracing::warn!(error = %e, "payments envinit consume failed — reconnecting")
+                        tracing::warn!(error = %e, "payments envinit consume failed - reconnecting")
                     }
                 }
                 tokio::time::sleep(RECONNECT_DELAY).await;
@@ -307,7 +307,7 @@ pub fn spawn_consumers(state: AppState) {
                         }
                     }
                     Err(e) => {
-                        tracing::warn!(error = %e, "payments review consume failed — reconnecting")
+                        tracing::warn!(error = %e, "payments review consume failed - reconnecting")
                     }
                 }
                 tokio::time::sleep(RECONNECT_DELAY).await;

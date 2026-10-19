@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Tokenization surface (PAY-10) — single-use instrument references.
+//! Tokenization surface (PAY-10) - single-use instrument references.
 //!
 //! `POST /v1/tokens` is callable through the BFF with a publishable
 //! credential restricted to the tokenization scope; a publishable token
@@ -24,7 +24,7 @@ use crate::handlers::{emit_event, err_db, set_tenant_context, AppState};
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreateTokenRequest {
     /// The payment method to tokenize (must already exist; the token is
-    /// a single-use reference to it — card data itself never transits).
+    /// a single-use reference to it - card data itself never transits).
     pub payment_method_id: Uuid,
 }
 
@@ -37,11 +37,11 @@ pub struct TokenResponse {
     pub expires_at: chrono::DateTime<Utc>,
 }
 
-/// `POST /v1/tokens` — mint a single-use token for a payment method.
+/// `POST /v1/tokens` - mint a single-use token for a payment method.
 ///
 /// Authorization: either the full `bill8:payments:tokens:write`
 /// scope, OR a publishable credential (the Shield scope-mirror permits
-/// the tokenization action for the publishable scope) — a publishable
+/// the tokenization action for the publishable scope) - a publishable
 /// token can do nothing else (every other payments action requires its
 /// own scope).
 #[utoipa::path(
@@ -129,14 +129,14 @@ pub async fn create_token(
     }))
 }
 
-/// `POST /v1/tokens/{token_value}/consume` — consume a token
+/// `POST /v1/tokens/{token_value}/consume` - consume a token
 /// (single-use guard: the first consume wins; every later consume of the
 /// same token is rejected).
 #[utoipa::path(
     post,
     path = "/v1/tokens/{token_value}/consume",
     responses(
-        (status = 200, description = "Token consumed — the payment method id"),
+        (status = 200, description = "Token consumed - the payment method id"),
         (status = 409, description = "Token already used or expired"),
         (status = 404, description = "Token not found"),
     ),
@@ -163,7 +163,7 @@ pub async fn consume_token(
         .map_err(err_db)?;
 
     // Guarded single-use: the UPDATE only matches an unused, unexpired
-    // token — a second consume finds no row (409), and an expired token
+    // token - a second consume finds no row (409), and an expired token
     // likewise never matches.
     let row = sqlx::query(
         r#"UPDATE payments.tokens

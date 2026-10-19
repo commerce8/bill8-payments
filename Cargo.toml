@@ -10,7 +10,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/commerce8/bill8-payments"
 rust-version = "1.85"
-description = "Sentin8 Bill8:Payments — charges, refunds, disputes, settlement channels."
+description = "Sentin8 Bill8:Payments - charges, refunds, disputes, settlement channels."
 
 [[bin]]
 name = "bill8-payments"

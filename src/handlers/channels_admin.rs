@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Channel-admin handlers — the registry listing, per-merchant default
+//! Channel-admin handlers - the registry listing, per-merchant default
 //! channel configuration, and routing rules. See channels.rs for the
 //! routing engine itself.
 
@@ -18,7 +18,7 @@ use uuid::Uuid;
 use crate::auth;
 use crate::handlers::{err_db, set_tenant_context, AppState};
 
-/// `GET /v1/channels` — list the runtime channel registry.
+/// `GET /v1/channels` - list the runtime channel registry.
 #[utoipa::path(
     get,
     path = "/v1/channels",
@@ -72,7 +72,7 @@ pub async fn list_channels(
     ))
 }
 
-/// `POST /v1/routing-rules` — create a routing rule.
+/// `POST /v1/routing-rules` - create a routing rule.
 #[utoipa::path(
     post,
     path = "/v1/routing-rules",
@@ -128,7 +128,7 @@ pub struct SetChannelConfigRequest {
     pub default_channel: Uuid,
 }
 
-/// The payment-method catalog (PAY-13) — method types as DATA with
+/// The payment-method catalog (PAY-13) - method types as DATA with
 /// capability metadata; routing matches a method to a capable channel.
 /// Adding a method type is data, not code.
 #[derive(Debug, Clone, serde::Serialize, utoipa::ToSchema)]
@@ -174,7 +174,7 @@ pub async fn method_catalog(
         .map_err(err_db)?;
 
     // The catalog is derived from the registered channels' capability
-    // matrices — a method appears when some enabled channel supports it.
+    // matrices - a method appears when some enabled channel supports it.
     let rows =
         sqlx::query("SELECT methods, regions, recurring FROM payments.channels WHERE enabled")
             .fetch_all(&mut *conn)
@@ -208,8 +208,8 @@ pub async fn method_catalog(
     Ok(Json(catalog))
 }
 
-/// `POST /v1/intents/{id}/handback` — the SCA challenge handback
-/// (PAY-12). Completes a held charge from the CHANNEL-VERIFIED result —
+/// `POST /v1/intents/{id}/handback` - the SCA challenge handback
+/// (PAY-12). Completes a held charge from the CHANNEL-VERIFIED result -
 /// never a client-asserted outcome. The handback token is single-use.
 #[utoipa::path(
     post,
@@ -282,7 +282,7 @@ pub async fn sca_handback(
 
     let amount_str: String = held.get::<Decimal, _>("amount").to_string();
     // The channel re-verifies: the SCA amount suffix re-evaluates to
-    // ScaRequired — a completed challenge means the customer
+    // ScaRequired - a completed challenge means the customer
     // authenticated, so the handback completes ONLY on the channel's
     // confirmation (simulated here as the challenge being consumed).
     let charge_id: Uuid = held.get("id");
@@ -295,7 +295,7 @@ pub async fn sca_handback(
     let _channel_id: Option<Uuid> = held.get("channel_id");
     let idempotency_key: Option<String> = held.get("idempotency_key");
 
-    // Ledger posting — the ONLY money movement (split when applicable).
+    // Ledger posting - the ONLY money movement (split when applicable).
     let charge_req = bill8::payments::contracts::CreateChargeRequest {
         customer_id,
         payment_method_id,
@@ -355,7 +355,7 @@ pub struct HandbackRequest {
     pub handback_token: String,
 }
 
-/// `PUT /v1/channel-config` — set the env's default channel.
+/// `PUT /v1/channel-config` - set the env's default channel.
 #[utoipa::path(
     put,
     path = "/v1/channel-config",
@@ -411,7 +411,7 @@ pub async fn set_channel_config(
     Ok(Json(serde_json::json!({ "status": "saved" })))
 }
 
-/// `GET /v1/channel-config` — read the env's default channel.
+/// `GET /v1/channel-config` - read the env's default channel.
 #[utoipa::path(
     get,
     path = "/v1/channel-config",

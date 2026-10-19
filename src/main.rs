@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Bill8:Payments binary — boots on the platform `sentin8::shell`.
+//! Bill8:Payments binary - boots on the platform `sentin8::shell`.
 //! See `services/payments/DESIGN.md`.
 
 #[allow(dead_code)]

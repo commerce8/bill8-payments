@@ -3,10 +3,10 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! # Bill8:Payments — core payments service
+//! # Bill8:Payments - core payments service
 //!
 //! The system of record for payment acceptance: customers, payment
-//! methods, intents, charges, refunds, and disputes — routed through
+//! methods, intents, charges, refunds, and disputes - routed through
 //! selectable settlement channels. Charges are append-only; refunds and
 //! disputes are compensating records; money is only moved through the
 //! ledger (a channel never mutates balances).

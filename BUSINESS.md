@@ -1,4 +1,4 @@
-# Bill8:Payments — Business Requirements & Functionality
+# Bill8:Payments - Business Requirements & Functionality
 
 > Audience: product owners, business analysts, and anyone evaluating what
 > Bill8:Payments **does for the business**. For architecture read
@@ -9,20 +9,20 @@
 Bill8:Payments is the **system of record for payment acceptance**. It
 delivers:
 
-- **Frictionless acceptance** — merchants accept one-off payments with a
+- **Frictionless acceptance** - merchants accept one-off payments with a
   customer and payment-method abstraction, no card-handling code.
-- **Rail choice** — every merchant selects the settlement channels that
+- **Rail choice** - every merchant selects the settlement channels that
   fit their business: the platform's own finance rails, external
   acquirers/payment platforms, or direct bank connections. Channels are
   selectable and combinable per merchant with declarative routing by
-  cost, payment method, and geography — and new channels onboard
+  cost, payment method, and geography - and new channels onboard
   without re-engineering the platform.
-- **Provable charge integrity** — every charge is recorded immutably;
+- **Provable charge integrity** - every charge is recorded immutably;
   refunds and disputes are compensating records, so the audit trail is
   always replayable.
-- **Safe retries** — idempotent APIs make a retried request harmless, so
+- **Safe retries** - idempotent APIs make a retried request harmless, so
   a dropped response never double-charges a customer.
-- **Marketplace splits** — a single charge can split to a connected
+- **Marketplace splits** - a single charge can split to a connected
   seller with an explicit platform fee, in one atomic operation.
 
 ## 2. Business Scope (What the Service Provides)
@@ -37,7 +37,7 @@ delivers:
 | 6 | Disputes | Challenges with evidence and clawback |
 | 7 | Setup intents | Save a method for later use |
 | 8 | Tokens | Single-use references for card data (client-side collectable) |
-| 9 | Settlement channels | Selectable rails — platform finance, external acquirers/platforms, bank rails — with per-merchant selection, declarative routing, and reconciliation |
+| 9 | Settlement channels | Selectable rails - platform finance, external acquirers/platforms, bank rails - with per-merchant selection, declarative routing, and reconciliation |
 | 10 | Test mode | Deterministic simulated instruments so integrators build against safe, predictable outcomes |
 
 **What the service does NOT own (business boundary):**
@@ -59,7 +59,7 @@ delivers:
 | Choose rails | A merchant selects a default channel and can route by cost, method, and geography; channels onboard without platform changes |
 | Refund a charge | A refund reverses a charge, bounded by the remaining refundable amount |
 | Dispute a charge | A dispute challenges a charge and can claw back funds |
-| Retry safely | A retried request is idempotent — never double-moves money |
+| Retry safely | A retried request is idempotent - never double-moves money |
 | Split a charge | A destination charge splits to a seller with an explicit platform fee, atomically |
 | Build in test mode | Integrators use deterministic test instruments; test traffic can never reach live rails |
 
@@ -76,7 +76,7 @@ delivers:
 
 ## 5. Business Rules & Invariants
 
-1. Charges are append-only — never mutated.
+1. Charges are append-only - never mutated.
 2. A refund can never exceed the remaining refundable amount.
 3. Money is only moved through Bill8:Ledger.
 4. Terminal states never regress.
