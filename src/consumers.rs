@@ -3,7 +3,7 @@
 // SPDX-FileCopyrightText: Copyright Contributors to the Bill8:Payments
 // SPDX-License-Identifier: Apache-2.0
 
-//! Sentin8:Bus consumers for Bill8:Payments (ENV-1 + RSK-3):
+//! Sentin8: Bus consumers for Bill8: Payments (+ RSK-3):
 //!
 //! - `sys` family, group `bill8:payments:envinit` - idempotent
 //!   per-tenant seeding on `sentin8:sys:service:updated {enabled}`.
@@ -217,7 +217,7 @@ pub fn spawn_consumers(state: AppState) {
                                 if let Ok(msg) =
                                     serde_json::from_str::<serde_json::Value>(data.trim())
                                 {
-                                    // ACK contract (BUSACK-1): an entry
+                                    // ACK contract : an entry
                                     // stays PENDING in the consumer group
                                     // until ACKed - unacked entries are
                                     // re-delivered by bus's XAUTOCLAIM

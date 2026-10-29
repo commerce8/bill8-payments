@@ -262,7 +262,7 @@ stateDiagram-v2
 **Producer tables** (platform contracts, `payments` leaf schema):
 `payments.outbox` (DBX producer path - architecture-principles §6.7)
 and `payments.audit_journal` (the 15-column contract of
-`sentin8_audit::audit_journal_sql`, AUDJOUR-1 - env-pinned RLS, drained
+`sentin8_audit:: audit_journal_sql` - env-pinned RLS, drained
 to Sys `POST /v1/audit` by the shell's boot-8c pusher).
 
 ## 4. API Surface
