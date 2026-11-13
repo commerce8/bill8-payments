@@ -9,8 +9,6 @@ use sentin8::registration::{
     AdminScope, AdminUi, AdminUiPage, ErrorCode, M2mGrant, PgRole, PolicySetDecl, Registration,
     SqlMigration,
 };
-use utoipa::OpenApi;
-
 const PG_ROLES: &[PgRole] = &[PgRole {
     scope: "bill8:payments:read,bill8:payments:write",
     role: "bill8_payments_service",
@@ -216,13 +214,17 @@ const EVENT_TRIGGERS: &[sentin8::registration::EventTriggerDecl] = &[];
 
 const SQL_1_INIT: &str = include_str!("../sql/init.sql");
 
-fn openapi_spec() -> serde_json::Value {
-    serde_json::to_value(crate::openapi::PaymentsOpenApi::openapi())
-        .unwrap_or(serde_json::Value::Null)
-}
 
 /// Print the registration JSON to stdout.
 pub fn print(section: Option<String>) -> anyhow::Result<()> {
+        // The utoipa dump lives OUTSIDE this file (OPENAPI_DUMP static in
+    // main.rs/lib.rs): test harnesses embedding this file via #[path] carry
+    // neither the static nor the openapi module and never print a spec.
+    #[cfg(not(test))]
+    let dump: fn() -> serde_json::Value = crate::OPENAPI_DUMP;
+    #[cfg(test)]
+    let dump: fn() -> serde_json::Value = || serde_json::Value::Null;
+
     let reg = Registration {
         service_type: "bill8:payments",
         subdomain: "bill8-payments",
@@ -251,7 +253,7 @@ pub fn print(section: Option<String>) -> anyhow::Result<()> {
         service_actions: None,
         m2m_grants: Some(M2M_GRANTS),
         openapi_url: "/openapi.json",
-        openapi: openapi_spec,
+        openapi: dump,
     };
-    sentin8::registration::print_registration(section, &reg, openapi_spec)
+    sentin8::registration::print_registration(section, &reg, dump)
 }
